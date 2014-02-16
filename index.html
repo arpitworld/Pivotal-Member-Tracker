@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+
+<html lang="en" debug="true">
+<head>
+<link class="theme-css" href="css/bootstrap.min.css" rel="stylesheet">
+<script type="text/javascript" src="js/jquery.min.js"></script>
+<script type="text/javascript" src="js/bootstrap.min.js"></script>
+<script type="text/javascript">
+function get_data(){
+  $("#mytable").html("");
+  var token = $("#mytoken").val();
+  var mytr = $("<tr></tr>");
+  $.getJSON('https://www.pivotaltracker.com/services/v5/projects/472709/memberships',{'token':token},function(r){
+    $.each(r,function(i,j){  //For each member
+        var user_panel = $('<div class="panel panel-default"></div>');
+        var panel_header = $('<div class="panel-heading"><h3 class="panel-title">'+j.person.name+'</h3></div>');
+        var panel_body = $('<div class="panel-body"></div>');
+        $.getJSON('https://www.pivotaltracker.com/services/v5/projects/472709/search',
+          {'token':token, 'query':'owner:'+j.person.id},
+          function(s){
+            var done_stories = (parseInt(s.stories.total_hits_with_done) - parseInt(s.stories.total_hits)).toString();
+            panel_body.append('<div class="done_stories">'+ done_stories +' Stories Done.</div>');      
+            $.each(s.stories.stories,function(x,y){ // For each Story 
+                var mystory = '<div data-toggle="tooltip" data-placement="bottom" title="';
+                mystory += y.description+'" class="story_body ' + y.current_state + '">';
+                mystory += '<div class="story_header"> <span class="glyphicon glyphicon-';
+                if(y.story_type=='feature')mystory+='star';
+                if(y.story_type=='bug')mystory+='fire';
+                if(y.story_type=='chore')mystory+='cog';
+                mystory += '"></span> <span class="estimate">'+(y.estimate||'Unestimated')+'</span>';
+                mystory += ' <a style="float: right" target="_blank" href="'+y.url+'">' + y.id + '</a></div>';
+                mystory += '<div class="story_name">'+y.name+'</div>';
+                mystory += '</div>';
+                panel_body.append($(mystory));
+                panel_body.find(".story_body").tooltip();
+                
+            });
+        });
+        user_panel.append(panel_header);
+        user_panel.append(panel_body);
+        var mytd = $("<td></td>").append(user_panel);
+        mytr.append(mytd);
+    });
+    $("#mytable").html(mytr);
+  });
+};
+
+function remove_inactive(){
+$(".panel-body").filter(function(i,j){return $(j).find(".story_body").length==0}).parent().parent().remove();
+}
+
+</script>
+<style>
+#result_table thead tr th{
+  min-width: 200px;
+  width: 200px;
+}
+
+.done_stories{
+  background: #2e4421;
+  color: #fff;
+  padding: 0 10px;
+  font-size: 10px;
+  line-height: 21px;
+}
+.panel{
+  width: 400px;
+  float: left;
+  margin-left: 10px;
+  margin-bottom: 0px;
+}
+.panel-body{padding: 2px; height: 500px; overflow: auto;}
+.story_body{ background: #f0f0c6; margin-top: 1px;}
+.unstarted{ background: #f4f4f4 !important;}
+.unscheduled{background: #d1e0ed !important;}
+.estimate{float: left; margin-left: 4px;}
+.story_name{padding: 5px;}
+.story_header{width: 100%; height: 20px; padding: 0px 5px;}
+.glyphicon{font-size: 20px; float: left;}  
+.glyphicon-fire{color: #b00;}
+.glyphicon-star{color: #cb0;}
+.glyphicon-cog{color: #444}
+.panel-title{font-weight: 900;}
+.tooltip-inner {
+    min-width: 400px;
+    max-width: 400px;
+}
+</style>
+
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-48130301-1', 'altervista.org');
+  ga('send', 'pageview');
+
+</script>
+
+</head>
+
+<body>
+
+
+<nav class="navbar navbar-default" role="navigation">
+  <div class="container-fluid">
+    <div class="navbar-header">
+        <a class="navbar-brand" href="#">Pivotal Tracker Members</a>
+    </div>
+
+      <ul class="nav navbar-nav navbar-right" style='margin: 0px 10px;'>
+        <li><button type="button" class='btn btn-default navbar-btn' onclick='remove_inactive();'>Hide Members with 0 active stories</button></li>
+      </ul>
+      <form class="navbar-form navbar-right" role="search">
+        <div class="form-group">
+           
+          <input type="text" id='mytoken' class="form-control" placeholder="API Token">
+          
+        </div>
+        <button type="button" onclick='get_data()' class="btn btn-default">Get Members</button>
+      </form>
+  </div><!-- /.container-fluid -->
+</nav>
+
+
+
+<table id='mytable'></table>
+</body>
+
+</html>
