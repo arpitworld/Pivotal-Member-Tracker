@@ -9,13 +9,14 @@
 function get_data(){
   $("#mytable").html("");
   var token = $("#mytoken").val();
+  var myproject = $("#myproject").val();
   var mytr = $("<tr></tr>");
-  $.getJSON('https://www.pivotaltracker.com/services/v5/projects/472709/memberships',{'token':token},function(r){
+  $.getJSON('https://www.pivotaltracker.com/services/v5/projects/'+myproject+'/memberships',{'token':token},function(r){
     $.each(r,function(i,j){  //For each member
         var user_panel = $('<div class="panel panel-default"></div>');
         var panel_header = $('<div class="panel-heading"><h3 class="panel-title">'+j.person.name+'</h3></div>');
         var panel_body = $('<div class="panel-body"></div>');
-        $.getJSON('https://www.pivotaltracker.com/services/v5/projects/472709/search',
+        $.getJSON('https://www.pivotaltracker.com/services/v5/projects/'+myproject+'/search',
           {'token':token, 'query':'owner:'+j.person.id},
           function(s){
             var done_stories = (parseInt(s.stories.total_hits_with_done) - parseInt(s.stories.total_hits)).toString();
@@ -115,7 +116,8 @@ $(".panel-body").filter(function(i,j){return $(j).find(".story_body").length==0}
       <form class="navbar-form navbar-right" role="search">
         <div class="form-group">
            
-          <input type="text" id='mytoken' class="form-control" placeholder="API Token">
+          <input type="text" id='mytoken'  placeholder="API Token">
+          <input type="text" id='myproject'  placeholder="Project ID">
           
         </div>
         <button type="button" onclick='get_data()' class="btn btn-default">Get Members</button>
