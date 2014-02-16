@@ -4,6 +4,7 @@
 <head>
 <link class="theme-css" href="css/bootstrap.min.css" rel="stylesheet">
 <script type="text/javascript" src="js/jquery.min.js"></script>
+<script type="text/javascript" src="js/jquery-sortable.js"></script>
 <script type="text/javascript" src="js/bootstrap.min.js"></script>
 <script type="text/javascript">
 function get_data(){
@@ -11,10 +12,14 @@ function get_data(){
   var token = $("#mytoken").val();
   var myproject = $("#myproject").val();
   var mytr = $("<tr></tr>");
+  $("#mytable").hide();
   $.getJSON('https://www.pivotaltracker.com/services/v5/projects/'+myproject+'/memberships',{'token':token},function(r){
+    var members_length = r.length;
+    var members_iter = 1;
+
     $.each(r,function(i,j){  //For each member
         var user_panel = $('<div class="panel panel-default"></div>');
-        var panel_header = $('<div class="panel-heading"><h3 class="panel-title">'+j.person.name+'</h3></div>');
+        var panel_header = $('<div class="panel-heading" id="'+j.person.id+'"><h3 class="panel-title">'+j.person.name+'</h3><button type="button" class="btn btn-default btn-xs removeme" ><span class="glyphicon glyphicon-remove"></button><button type="button" class="btn btn-default btn-xs refreshme" ><span class="glyphicon glyphicon-refresh"></button></span></div>');
         var panel_body = $('<div class="panel-body"></div>');
         $.getJSON('https://www.pivotaltracker.com/services/v5/projects/'+myproject+'/search',
           {'token':token, 'query':'owner:'+j.person.id},
@@ -36,6 +41,10 @@ function get_data(){
                 panel_body.find(".story_body").tooltip();
                 
             });
+            var progress=(parseInt(100*members_iter/members_length)).toString()
+            $("#loading_bar").html( '<div class="progress"><div class="progress-bar" role="progressbar" aria-valuenow="'+progress+'" aria-valuemin="0" aria-valuemax="100" style="width:'+progress+'%;">'+progress+'%</div></div>');
+            if(members_iter==members_length){$("#loading_bar").html("");$("#mytable").show();}
+            members_iter += 1;
         });
         user_panel.append(panel_header);
         user_panel.append(panel_body);
@@ -43,12 +52,49 @@ function get_data(){
         mytr.append(mytd);
     });
     $("#mytable").html(mytr);
+    $( "tr" ).sortable({
+                        placeholder: "widget_highlight_placeholder",
+                        forcePlaceholderSize: true,
+                        opacity: 0.5,
+                        handle: ".panel-heading",
+                });
+
   });
 };
-
+$(document).on('click','.refreshme',function(){
+  var myproject = $("#myproject").val();
+  var token = $("#mytoken").val();
+  var person_id=$(this).parent().attr("id");
+  var panel_body = $(this).parent().parent().children(".panel-body"); 
+   panel_body.html('<div id="loading'+person_id+'"><center><img src="images/loading.gif"></center></div>')
+        $.getJSON('https://www.pivotaltracker.com/services/v5/projects/'+myproject+'/search',
+          {'token':token, 'query':'owner:'+person_id},
+          function(s){
+            var done_stories = (parseInt(s.stories.total_hits_with_done) - parseInt(s.stories.total_hits)).toString();
+            panel_body.append('<div class="done_stories">'+ done_stories +' Stories Done.</div>');      
+            $.each(s.stories.stories,function(x,y){ // For each Story 
+                var mystory = '<div data-toggle="tooltip" data-placement="bottom" title="';
+                mystory += y.description+'" class="story_body ' + y.current_state + '">';
+                mystory += '<div class="story_header"> <span class="glyphicon glyphicon-';
+                if(y.story_type=='feature')mystory+='star';
+                if(y.story_type=='bug')mystory+='fire';
+                if(y.story_type=='chore')mystory+='cog';
+                mystory += '"></span> <span class="estimate">'+(y.estimate||'Unestimated')+'</span>';
+                mystory += ' <a style="float: right" target="_blank" href="'+y.url+'">' + y.id + '</a></div>';
+                mystory += '<div class="story_name">'+y.name+'</div>';
+                mystory += '</div>';
+                panel_body.append($(mystory));
+                panel_body.find(".story_body").tooltip();
+                
+            });
+            $("#loading"+person_id).remove();
+        });
+});
 function remove_inactive(){
 $(".panel-body").filter(function(i,j){return $(j).find(".story_body").length==0}).parent().parent().remove();
 }
+
+$(document).on('click','.removeme',function(){$(this).parent().parent().parent().remove();});
 
 </script>
 <style>
@@ -67,9 +113,9 @@ $(".panel-body").filter(function(i,j){return $(j).find(".story_body").length==0}
 .panel{
   width: 400px;
   float: left;
-  margin-left: 10px;
-  margin-bottom: 0px;
+  margin: 0 5px;
 }
+.panel-heading{cursor: move;height:35px;margin-bottom: 2px;}
 .panel-body{padding: 2px; height: 500px; overflow: auto;}
 .story_body{ background: #f0f0c6; margin-top: 1px;}
 .unstarted{ background: #f4f4f4 !important;}
@@ -81,11 +127,20 @@ $(".panel-body").filter(function(i,j){return $(j).find(".story_body").length==0}
 .glyphicon-fire{color: #b00;}
 .glyphicon-star{color: #cb0;}
 .glyphicon-cog{color: #444}
-.panel-title{font-weight: 900;}
+.glyphicon-refresh,.glyphicon-remove{color: #444; font-size: 15px !important;}
+.panel-title{font-weight: 900; float: left;}
 .tooltip-inner {
     min-width: 400px;
     max-width: 400px;
 }
+.widget_highlight_placeholder {
+    border: 2px dashed silver;
+    background-color:  #f6f6f6;
+    min-width: 400px;
+    max-width: 400px;
+}
+.removeme, .refreshme{float: right; height: 24px; margin: -4px 0px 0px 4px;}
+#loading_bar{width: 50%;}
 </style>
 
 <script>
@@ -126,7 +181,7 @@ $(".panel-body").filter(function(i,j){return $(j).find(".story_body").length==0}
 </nav>
 
 
-
+<center><div id='loading_bar'></div></center>
 <table id='mytable'></table>
 </body>
 
