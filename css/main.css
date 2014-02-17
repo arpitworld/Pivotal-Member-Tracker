@@ -1,0 +1,47 @@
+#result_table thead tr th{
+  min-width: 200px;
+  width: 200px;
+}
+.done_stories{
+  background: #2e4421;
+  color: #fff;
+  padding: 0 10px;
+  font-size: 10px;
+  line-height: 21px;
+}
+.panel{
+  width: 400px;
+  float: left;
+  margin: 0 5px;
+}
+.panel-heading{cursor: move;height:35px;margin-bottom: 2px;}
+.panel-body{padding: 2px; height: 500px; overflow: auto;}
+.panel-title{font-weight: 900; float: left;}
+
+.story_name{padding: 5px;}
+.story_header{width: 100%; height: 20px; padding: 0px 5px;}
+.story_body{ background: #f0f0c6; margin-top: 1px;}
+
+.unstarted{ background: #f4f4f4 !important;}
+.unscheduled{background: #d1e0ed !important;}
+.estimate{float: left; margin-left: 4px;}
+
+.glyphicon{font-size: 20px; float: left;}
+.glyphicon-fire{color: #b00;}
+.glyphicon-star{color: #cb0;}
+.glyphicon-cog{color: #444}
+.glyphicon-refresh,.glyphicon-remove{color: #444; font-size: 15px !important;}
+
+.tooltip-inner {
+    min-width: 400px;
+    max-width: 400px;
+}
+.widget_highlight_placeholder {
+    border: 2px dashed silver;
+    background-color:  #f6f6f6;
+    min-width: 400px;
+    max-width: 400px;
+}
+.removeme, .refreshme{float: right; height: 24px; margin: -4px 0px 0px 4px;}
+#loading_bar{width: 50%;}
+
