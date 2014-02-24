@@ -24,6 +24,7 @@
 
 .unstarted{ background: #f4f4f4 !important;}
 .unscheduled{background: #d1e0ed !important;}
+.accepted{background: #daebcf !important;}
 .estimate{float: left; margin-left: 4px;}
 
 .glyphicon{font-size: 20px; float: left;}
