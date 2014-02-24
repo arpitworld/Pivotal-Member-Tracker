@@ -16,6 +16,9 @@ function get_data(){
                         opacity: 0.5,
                         handle: ".panel-heading",
                 });
+  members_iter=0;
+  total=10;
+  show_progress();
   $.getJSON('https://www.pivotaltracker.com/services/v5/projects/'+myproject+'/memberships',{'token':token},function(r){
     total = r.length;
     members_iter = 1; 
