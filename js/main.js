@@ -52,19 +52,24 @@ function get_member_stories(person_id,sync_function){
     var done_stories = (parseInt(s.stories.total_hits_with_done) - parseInt(s.stories.total_hits)).toString();
     panel_body.append('<div class="done_stories">'+ done_stories +' Stories Done.</div>');
     $.each(s.stories.stories,function(x,y){ // For each Story 
-        panel_body.append($([
+        var story_panel_body=$([
         '<div data-toggle="tooltip" ',
              'data-placement="bottom" ',
-             'title="',y.description,'" ',
-             'class="story_body ' , y.current_state , '">',
+             'title="" ',
+             'class="story_body">',
           '<div class="story_header">',
-          '  <span class="glyphicon glyphicon-',story_type_icon[y.story_type],'"></span> ',
+          '  <span class="glyphicon"></span> ',
           '  <span class="estimate">',(y.estimate||'Unestimated'),'</span>',
           '  <a style="float: right" target="_blank" href="',y.url,'">' , y.id , '</a>',
           '</div>',
-          '<div class="story_name">'+y.name+'</div>',
-        '</div>'].join("")));
-        panel_body.find(".story_body").tooltip();
+          '<div class="story_name"></div>',
+        '</div>'].join(""));
+        story_panel_body.find(".glyphicon").addClass('glyphicon-'+story_type_icon[y.story_type])
+        story_panel_body.attr("title",y.description);
+        story_panel_body.find(".story_name").html(y.name);
+        story_panel_body.addClass(y.current_state);
+        story_panel_body.tooltip();
+        panel_body.append(story_panel_body);
      });
      $("#loading"+person_id).remove();
      if(typeof(sync_function)!='undefined'){sync_function();}
